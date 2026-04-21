@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Glosario de Programación</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; padding: 2rem; }
+    h1 { text-align: center; font-size: 2rem; margin-bottom: 0.5rem; color: #f8fafc; }
+    .subtitulo { text-align: center; color: #94a3b8; margin-bottom: 2rem; }
+    .agregar { display: flex; gap: 0.5rem; max-width: 500px; margin: 0 auto 1rem; }
+    .agregar input { flex: 1; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: #f1f5f9; font-size: 1rem; }
+    .agregar button { padding: 0.75rem 1.5rem; background: #6366f1; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+    .agregar button:hover { background: #4f46e5; }
+    .estado { text-align: center; color: #6366f1; margin-bottom: 1rem; min-height: 1.5rem; }
+    .estado.error { color: #f87171; }
+    .buscador { max-width: 500px; margin: 0 auto 2.5rem; }
+    .buscador input { width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: #f1f5f9; font-size: 1rem; }
+    .categoria { margin-bottom: 2.5rem; }
+    .categoria h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6366f1; margin-bottom: 0.25rem; }
+    .categoria .descripcion-cat { font-size: 0.85rem; color: #64748b; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid #1e293b; }
+    .tarjetas { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+    .tarjeta { background: #1e293b; border-radius: 12px; padding: 1.25rem; border: 1px solid #334155; position: relative; }
+    .tarjeta-acciones { position: absolute; top: 0.75rem; right: 0.75rem; display: flex; gap: 0.4rem; opacity: 0; transition: opacity 0.2s; }
+    .tarjeta:hover .tarjeta-acciones { opacity: 1; }
+    .tarjeta-acciones button { background: none; border: none; cursor: pointer; padding: 0.25rem; border-radius: 4px; font-size: 0.85rem; color: #64748b; }
+    .tarjeta-acciones button:hover { background: #334155; color: #e2e8f0; }
+    .tarjeta h3 { color: #f1f5f9; margin-bottom: 0.5rem; font-size: 1rem; padding-right: 3rem; }
+    .tarjeta p { color: #94a3b8; font-size: 0.9rem; line-height: 1.6; }
+    .tarjeta textarea { width: 100%; background: #0f172a; color: #e2e8f0; border: 1px solid #6366f1; border-radius: 6px; padding: 0.5rem; font-size: 0.9rem; line-height: 1.6; resize: vertical; min-height: 80px; font-family: inherit; }
+    .tarjeta .guardar-btn { margin-top: 0.5rem; padding: 0.4rem 0.9rem; background: #6366f1; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <h1>Mi Glosario de Programación</h1>
+  <p class="subtitulo">Términos que he aprendido — definidos por Claude</p>
+
+  <div class="agregar">
+    <input type="text" id="termino" placeholder="Escribe un término..." />
+    <button onclick="agregar()">Agregar</button>
+  </div>
+  <p class="estado" id="estado"></p>
+
+  <div class="buscador">
+    <input type="text" id="busqueda" placeholder="🔍 Buscar en el glosario..." oninput="filtrar()" />
+  </div>
+
+  {% set categorias = terminos | map(attribute='categoria') | unique | sort | list %}
+  {% for cat in categorias %}
+  <div class="categoria">
+    <h2>{{ cat }}</h2>
+    <p class="descripcion-cat">{{ descripciones.get(cat, '') }}</p>
+    <div class="tarjetas">
+      {% for t in terminos if t.categoria == cat %}
+      {% set indice = terminos.index(t) %}
+      <div class="tarjeta">
+        <div class="tarjeta-acciones">
+          <button onclick="activarEdicion(this, {{ indice }})" title="Editar">✏️</button>
+          <button onclick="eliminar({{ indice }})" title="Eliminar">🗑️</button>
+        </div>
+        <h3>{{ t.termino }}</h3>
+        <p class="definicion-texto">{{ t.definicion }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <script>
+    async function agregar() {
+      const input = document.getElementById("termino");
+      const estado = document.getElementById("estado");
+      const termino = input.value.trim();
+      if (!termino) return;
+      estado.className = "estado";
+      estado.textContent = "Consultando a Claude...";
+      const res = await fetch("/agregar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ termino })
+      });
+      const data = await res.json();
+      if (data.invalido) {
+        estado.className = "estado error";
+        estado.textContent = "No se encontraron resultados vinculados al desarrollo de software para este término.";
+        input.value = "";
+        return;
+      }
+      if (data.ok) {
+        estado.textContent = "Término agregado. Recargando...";
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        estado.className = "estado error";
+        estado.textContent = "Hubo un error. Intenta de nuevo.";
+      }
+    }
+
+    function activarEdicion(btn, indice) {
+      const tarjeta = btn.closest(".tarjeta");
+      const p = tarjeta.querySelector(".definicion-texto");
+      const textoActual = p.textContent;
+      const textarea = document.createElement("textarea");
+      textarea.value = textoActual;
+      const guardarBtn = document.createElement("button");
+      guardarBtn.textContent = "Guardar";
+      guardarBtn.className = "guardar-btn";
+      guardarBtn.onclick = () => guardarEdicion(indice, textarea.value, tarjeta, textarea, guardarBtn, p);
+      p.replaceWith(textarea);
+      tarjeta.appendChild(guardarBtn);
+      btn.style.display = "none";
+    }
+
+    async function guardarEdicion(indice, definicion, tarjeta, textarea, guardarBtn, p) {
+      await fetch("/editar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ indice, definicion })
+      });
+      p.textContent = definicion;
+      textarea.replaceWith(p);
+      guardarBtn.remove();
+      tarjeta.querySelector("[title='Editar']").style.display = "";
+    }
+
+    async function eliminar(indice) {
+      if (!confirm("¿Eliminar este término?")) return;
+      await fetch("/eliminar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ indice })
+      });
+      location.reload();
+    }
+
+    function filtrar() {
+      const q = document.getElementById("busqueda").value.toLowerCase();
+      document.querySelectorAll(".categoria").forEach(cat => {
+        let visibles = 0;
+        cat.querySelectorAll(".tarjeta").forEach(tarjeta => {
+          const texto = tarjeta.querySelector("h3").textContent.toLowerCase()
+                      + tarjeta.querySelector(".definicion-texto").textContent.toLowerCase();
+          const mostrar = texto.includes(q);
+          tarjeta.style.display = mostrar ? "" : "none";
+          if (mostrar) visibles++;
+        });
+        cat.style.display = visibles > 0 ? "" : "none";
+      });
+    }
+
+    document.getElementById("termino").addEventListener("keydown", e => {
+      if (e.key === "Enter") agregar();
+    });
+  </script>
+</body>
+</html>
