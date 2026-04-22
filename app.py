@@ -9,6 +9,8 @@ load_dotenv(os.path.join(os.path.dirname(__file__), ".env"), override=True)
 app = Flask(__name__)
 
 def cargar_glosario():
+    if not os.path.exists("glosario.json"):
+        return {"terminos": []}
     with open("glosario.json", "r", encoding="utf-8") as f:
         return json.load(f)
 
