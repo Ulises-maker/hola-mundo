@@ -41,6 +41,21 @@
       "categoria": "Python"
     },
     {
+      "termino": "Dependencias",
+      "definicion": "Las dependencias son bibliotecas, paquetes o módulos externos que un proyecto necesita para funcionar correctamente. Se gestionan mediante herramientas específicas como npm, pip o Maven, según el lenguaje de programación.",
+      "categoria": "General"
+    },
+    {
+      "termino": "Dependencias directas",
+      "definicion": "Las dependencias directas son las librerías o paquetes que tu proyecto utiliza e importa explícitamente en su código. Se declaran de forma manual en archivos de configuración como package.json o requirements.txt.",
+      "categoria": "General"
+    },
+    {
+      "termino": "Dependencias transitivas",
+      "definicion": "Son las dependencias indirectas que se instalan automáticamente porque son requeridas por las dependencias directas de un proyecto. Es decir, las librerías que usan las librerías que tú declaraste explícitamente.",
+      "categoria": "General"
+    },
+    {
       "termino": "Deploy / Despliegue",
       "definicion": "Es el proceso de publicar una aplicación o sitio web en un servidor para que esté disponible para los usuarios. Consiste en llevar el código desde el entorno de desarrollo al entorno de producción.",
       "categoria": "General"
@@ -48,6 +63,11 @@
     {
       "termino": "Entorno virtual (venv)",
       "definicion": "Una carpeta aislada dentro de tu proyecto que tiene su propio Python y sus propias librerías. Lo que instales ahí no afecta a otros proyectos ni a tu Mac. Es como tener una mochila separada para cada proyecto.",
+      "categoria": "Python"
+    },
+    {
+      "termino": "Flask",
+      "definicion": "Flask es un microframework de Python para desarrollar aplicaciones web de forma ligera y flexible. Proporciona herramientas básicas para manejar rutas, solicitudes HTTP y plantillas, permitiendo añadir funcionalidades mediante extensiones.",
       "categoria": "Python"
     },
     {
@@ -64,6 +84,16 @@
       "termino": "GITHUB",
       "definicion": "GitHub es una plataforma en línea que permite alojar proyectos de código usando el sistema de control de versiones Git. Facilita la colaboración entre desarrolladores para compartir, revisar y gestionar código.",
       "categoria": "Git"
+    },
+    {
+      "termino": "Hacer push",
+      "definicion": "Hacer push es enviar los commits locales a un repositorio remoto para que los cambios estén disponibles para otros colaboradores. Es una operación común al trabajar con control de versiones.",
+      "categoria": "Git"
+    },
+    {
+      "termino": "Homebrew",
+      "definicion": "Homebrew es un gestor de paquetes para macOS y Linux que permite instalar, actualizar y administrar software desde la línea de comandos. Facilita la instalación de herramientas de desarrollo y utilidades de código abierto.",
+      "categoria": "General"
     },
     {
       "termino": "HTTP",
@@ -86,9 +116,19 @@
       "categoria": "Python"
     },
     {
+      "termino": "Maqueta",
+      "definicion": "Una maqueta (o mockup) es una representación visual estática de una interfaz de usuario que muestra cómo se verá un sitio web o aplicación antes de desarrollarlo. Sirve para validar el diseño y la disposición de los elementos con clientes o el equipo.",
+      "categoria": "Web"
+    },
+    {
       "termino": "Merge",
       "definicion": "El acto de unir una rama de vuelta a la rama principal (main). Ocurre cuando un Pull Request es aprobado.",
       "categoria": "Git"
+    },
+    {
+      "termino": "Procfile",
+      "definicion": "Un Procfile es un archivo de texto que declara los comandos que deben ejecutarse para iniciar los procesos de una aplicación en plataformas como Heroku. Especifica tipos de procesos (como web o worker) y el comando asociado a cada uno.",
+      "categoria": "Web"
     },
     {
       "termino": "Producción vs Desarrollo",
@@ -114,6 +154,11 @@
       "termino": "Push",
       "definicion": "Enviar tus commits desde tu computadora hacia GitHub. Tú trabajas en local y cuando quieres respaldarlo o compartirlo, haces push.",
       "categoria": "Git"
+    },
+    {
+      "termino": "Python",
+      "definicion": "Python es un lenguaje de programación de alto nivel, interpretado y de propósito general, conocido por su sintaxis clara y legible. Se utiliza en desarrollo web, ciencia de datos, automatización, inteligencia artificial y más.",
+      "categoria": "Python"
     },
     {
       "termino": "Rama (Branch)",
@@ -143,6 +188,11 @@
     {
       "termino": "Variable de entorno",
       "definicion": "Una variable de entorno es un valor dinámico almacenado en el sistema operativo que los programas pueden leer para configurar su comportamiento. Se usa comúnmente para guardar información sensible o de configuración, como contraseñas o rutas, fuera del código fuente.",
+      "categoria": "General"
+    },
+    {
+      "termino": "VS Code",
+      "definicion": "VS Code (Visual Studio Code) es un editor de código fuente gratuito y de código abierto desarrollado por Microsoft. Soporta múltiples lenguajes de programación y cuenta con una amplia variedad de extensiones para mejorar la productividad.",
       "categoria": "General"
     }
   ]
