@@ -4,7 +4,7 @@ import json
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"), override=True)
 
 app = Flask(__name__)
 
@@ -25,10 +25,13 @@ DESCRIPCIONES_CATEGORIA = {
     "Web": "Tecnologías y conceptos para construir y publicar aplicaciones en internet.",
 }
 
+AMBIENTE = os.getenv("AMBIENTE", "QA")
+VERSION = os.getenv("VERSION", "1.1.0")
+
 @app.route("/")
 def index():
     glosario = cargar_glosario()
-    return render_template("index.html", terminos=glosario["terminos"], descripciones=DESCRIPCIONES_CATEGORIA)
+    return render_template("index.html", terminos=glosario["terminos"], descripciones=DESCRIPCIONES_CATEGORIA, ambiente=AMBIENTE, version=VERSION)
 
 @app.route("/agregar", methods=["POST"])
 def agregar():
@@ -39,7 +42,7 @@ def agregar():
         max_tokens=300,
         messages=[{
             "role": "user",
-            "content": f"Evalúa si '{termino}' es un término de desarrollo de software. Si NO lo es, responde exactamente: {{\"valido\": false}}. Si SÍ lo es, defínelo en máximo 2 oraciones simples en español e indica su categoría eligiendo una de: Git, Python, Web, Base de datos, General. Responde: {{\"valido\": true, \"definicion\": \"...\", \"categoria\": \"...\"}}"
+            "content": f"Evalúa si '{termino}' es un término de desarrollo de software. Si NO lo es, responde exactamente: {{\"valido\": false}}. Si SÍ lo es, defínelo en máximo 2 oraciones simples en español. Cuando sea útil, agrega una analogía cotidiana o un ejemplo corto que facilite entenderlo (introducido con 'Ejemplo:' o 'Analogía:'). Indica su categoría eligiendo una de: Git, Python, Web, Base de datos, General. Responde únicamente JSON: {{\"valido\": true, \"definicion\": \"...\", \"categoria\": \"...\"}}"
         }]
     )
     respuesta = json.loads(mensaje.content[0].text)

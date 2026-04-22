@@ -17,19 +17,63 @@
     .estado.error { color: #f87171; }
     .buscador { max-width: 500px; margin: 0 auto 2.5rem; }
     .buscador input { width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: #f1f5f9; font-size: 1rem; }
-    .categoria { margin-bottom: 2.5rem; }
+
+    /* Categorías */
+    .categoria { margin-bottom: 2.5rem; max-width: 700px; margin-left: auto; margin-right: auto; }
     .categoria h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6366f1; margin-bottom: 0.25rem; }
     .categoria .descripcion-cat { font-size: 0.85rem; color: #64748b; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid #1e293b; }
-    .tarjetas { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
-    .tarjeta { background: #1e293b; border-radius: 12px; padding: 1.25rem; border: 1px solid #334155; position: relative; }
-    .tarjeta-acciones { position: absolute; top: 0.75rem; right: 0.75rem; display: flex; gap: 0.4rem; opacity: 0; transition: opacity 0.2s; }
-    .tarjeta:hover .tarjeta-acciones { opacity: 1; }
-    .tarjeta-acciones button { background: none; border: none; cursor: pointer; padding: 0.25rem; border-radius: 4px; font-size: 0.85rem; color: #64748b; }
-    .tarjeta-acciones button:hover { background: #334155; color: #e2e8f0; }
-    .tarjeta h3 { color: #f1f5f9; margin-bottom: 0.5rem; font-size: 1rem; padding-right: 3rem; }
-    .tarjeta p { color: #94a3b8; font-size: 0.9rem; line-height: 1.6; }
-    .tarjeta textarea { width: 100%; background: #0f172a; color: #e2e8f0; border: 1px solid #6366f1; border-radius: 6px; padding: 0.5rem; font-size: 0.9rem; line-height: 1.6; resize: vertical; min-height: 80px; font-family: inherit; }
-    .tarjeta .guardar-btn { margin-top: 0.5rem; padding: 0.4rem 0.9rem; background: #6366f1; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+
+    /* Lista de términos */
+    .lista-terminos { display: flex; flex-direction: column; gap: 0.4rem; }
+
+    /* Fila del término (encabezado del acordeón) */
+    .termino-fila {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.7rem 1rem;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .termino-fila:hover { background: #263347; }
+    .termino-fila.abierto { border-color: #6366f1; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+
+    .termino-nombre { font-weight: 600; color: #f1f5f9; font-size: 0.95rem; }
+    .termino-chevron { color: #64748b; font-size: 0.75rem; transition: transform 0.2s; }
+    .termino-fila.abierto .termino-chevron { transform: rotate(180deg); }
+
+    /* Panel expandido */
+    .termino-panel {
+      display: none;
+      background: #162032;
+      border: 1px solid #6366f1;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      padding: 1rem 1rem 0.75rem;
+    }
+    .termino-panel.abierto { display: block; }
+    .termino-panel p { color: #94a3b8; font-size: 0.9rem; line-height: 1.7; }
+    .termino-panel textarea { width: 100%; background: #0f172a; color: #e2e8f0; border: 1px solid #6366f1; border-radius: 6px; padding: 0.5rem; font-size: 0.9rem; line-height: 1.6; resize: vertical; min-height: 80px; font-family: inherit; }
+    .panel-acciones { display: flex; gap: 0.5rem; margin-top: 0.75rem; justify-content: flex-end; }
+    .panel-acciones button { background: none; border: 1px solid #334155; cursor: pointer; padding: 0.3rem 0.7rem; border-radius: 6px; font-size: 0.8rem; color: #64748b; }
+    .panel-acciones button:hover { background: #334155; color: #e2e8f0; }
+    .guardar-btn { background: #6366f1 !important; border-color: #6366f1 !important; color: white !important; }
+    .guardar-btn:hover { background: #4f46e5 !important; }
+
+    /* Badge de ambiente */
+    .badge-ambiente {
+      position: fixed; bottom: 1.25rem; right: 1.25rem;
+      background: #1e293b; border: 1px solid #334155;
+      border-radius: 20px; padding: 0.35rem 0.85rem;
+      font-size: 0.75rem; color: #94a3b8;
+      display: flex; align-items: center; gap: 0.4rem;
+      z-index: 100;
+    }
+    .badge-ambiente .dot { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; }
   </style>
 </head>
 <body>
@@ -46,21 +90,31 @@
     <input type="text" id="busqueda" placeholder="🔍 Buscar en el glosario..." oninput="filtrar()" />
   </div>
 
+  <div class="badge-ambiente">
+    <span class="dot"></span>
+    {{ ambiente }} — v{{ version }}
+  </div>
+
   {% set categorias = terminos | map(attribute='categoria') | unique | sort | list %}
   {% for cat in categorias %}
   <div class="categoria">
     <h2>{{ cat }}</h2>
     <p class="descripcion-cat">{{ descripciones.get(cat, '') }}</p>
-    <div class="tarjetas">
+    <div class="lista-terminos">
       {% for t in terminos if t.categoria == cat %}
       {% set indice = terminos.index(t) %}
-      <div class="tarjeta">
-        <div class="tarjeta-acciones">
-          <button onclick="activarEdicion(this, {{ indice }})" title="Editar">✏️</button>
-          <button onclick="eliminar({{ indice }})" title="Eliminar">🗑️</button>
+      <div class="termino-item" data-indice="{{ indice }}">
+        <div class="termino-fila" onclick="toggleTermino(this)">
+          <span class="termino-nombre">{{ t.termino }}</span>
+          <span class="termino-chevron">▼</span>
         </div>
-        <h3>{{ t.termino }}</h3>
-        <p class="definicion-texto">{{ t.definicion }}</p>
+        <div class="termino-panel">
+          <p class="definicion-texto">{{ t.definicion }}</p>
+          <div class="panel-acciones">
+            <button onclick="activarEdicion(this, {{ indice }})" title="Editar">✏️ Editar</button>
+            <button onclick="eliminar({{ indice }})" title="Eliminar">🗑️ Eliminar</button>
+          </div>
+        </div>
       </div>
       {% endfor %}
     </div>
@@ -68,6 +122,13 @@
   {% endfor %}
 
   <script>
+    function toggleTermino(fila) {
+      const panel = fila.nextElementSibling;
+      const estaAbierto = fila.classList.contains("abierto");
+      fila.classList.toggle("abierto", !estaAbierto);
+      panel.classList.toggle("abierto", !estaAbierto);
+    }
+
     async function agregar() {
       const input = document.getElementById("termino");
       const estado = document.getElementById("estado");
@@ -97,21 +158,21 @@
     }
 
     function activarEdicion(btn, indice) {
-      const tarjeta = btn.closest(".tarjeta");
-      const p = tarjeta.querySelector(".definicion-texto");
+      const panel = btn.closest(".termino-panel");
+      const p = panel.querySelector(".definicion-texto");
       const textoActual = p.textContent;
       const textarea = document.createElement("textarea");
       textarea.value = textoActual;
       const guardarBtn = document.createElement("button");
       guardarBtn.textContent = "Guardar";
       guardarBtn.className = "guardar-btn";
-      guardarBtn.onclick = () => guardarEdicion(indice, textarea.value, tarjeta, textarea, guardarBtn, p);
+      guardarBtn.onclick = () => guardarEdicion(indice, textarea.value, panel, textarea, guardarBtn, p);
       p.replaceWith(textarea);
-      tarjeta.appendChild(guardarBtn);
+      panel.querySelector(".panel-acciones").prepend(guardarBtn);
       btn.style.display = "none";
     }
 
-    async function guardarEdicion(indice, definicion, tarjeta, textarea, guardarBtn, p) {
+    async function guardarEdicion(indice, definicion, panel, textarea, guardarBtn, p) {
       await fetch("/editar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -120,7 +181,7 @@
       p.textContent = definicion;
       textarea.replaceWith(p);
       guardarBtn.remove();
-      tarjeta.querySelector("[title='Editar']").style.display = "";
+      panel.querySelector("[title='Editar']").style.display = "";
     }
 
     async function eliminar(indice) {
@@ -137,11 +198,11 @@
       const q = document.getElementById("busqueda").value.toLowerCase();
       document.querySelectorAll(".categoria").forEach(cat => {
         let visibles = 0;
-        cat.querySelectorAll(".tarjeta").forEach(tarjeta => {
-          const texto = tarjeta.querySelector("h3").textContent.toLowerCase()
-                      + tarjeta.querySelector(".definicion-texto").textContent.toLowerCase();
-          const mostrar = texto.includes(q);
-          tarjeta.style.display = mostrar ? "" : "none";
+        cat.querySelectorAll(".termino-item").forEach(item => {
+          const nombre = item.querySelector(".termino-nombre").textContent.toLowerCase();
+          const def = item.querySelector(".definicion-texto").textContent.toLowerCase();
+          const mostrar = (nombre + def).includes(q);
+          item.style.display = mostrar ? "" : "none";
           if (mostrar) visibles++;
         });
         cat.style.display = visibles > 0 ? "" : "none";
